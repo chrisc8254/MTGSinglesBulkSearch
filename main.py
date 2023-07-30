@@ -5,7 +5,8 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 
 # to do:
-# make sure art cards aren't included
+# find the cheapest place to buy each card
+# find the cheapest place to buy the whole deck
 
 # set up the selenium driver to get the html data from the site
 options = Options()
@@ -19,6 +20,7 @@ driver = webdriver.Firefox(service=service,options=options)
 
 # set up list to add stores to 
 stores = {}
+missing_cards = []
 
 # set up list of cards to search for
 deck_list = open(os.path.dirname(script_file_path) + "\decklist.txt","r")
@@ -60,6 +62,8 @@ def parse_html(card_name):
             price_data.append(line[42:])
         if "class=\"title\"" in line: # check for card name
             name_data.append(line[41:])
+    if len(site_data) == 0:
+        missing_cards.append(card_name)
     scraped_stores = []
     for i in range(len(site_data)):
         # print(card_name)
@@ -75,12 +79,21 @@ def parse_html(card_name):
             # print(site_name + ": " + str(stores.get(site_name).get(card_name)))
 
 def process_stores():
-    # for store in stores.keys():
-    #     print(store)
-    #     for card in stores.get(store).keys():
-    #         print(card + ": " + str(stores.get(store).get(card)))
-    
-    return 0
+    output_file = open("cardlocations.txt","w")
+    for store in stores.keys():
+        print(store + ": " + str(len(stores.get(store).keys())) + " card(s) in stock")
+        store_cost = 0
+        output_file.write(store + " (" + str(len(stores.get(store).keys())) + " card(s))" + "\n")
+        for card in stores.get(store).keys():
+            output_file.write(card + ": $" + str(stores.get(store).get(card)) + "\n")
+            store_cost += stores.get(store).get(card)
+            print(card + ": $" + str(stores.get(store).get(card)))
+        output_file.write("Total cost: $" + str(store_cost) + "\n\n")
+    if len(missing_cards) > 0:
+        print("Missing card(s): ")
+        for card in missing_cards:
+            print(card)
+    output_file.close()
 
 # process the list of cards
 for card in range(len(deck_list)):
