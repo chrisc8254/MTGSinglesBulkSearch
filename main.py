@@ -62,7 +62,7 @@ def parse_html(card_name):
             price_data.append(line[42:])
         if "class=\"title\"" in line: # check for card name
             name_data.append(line[41:])
-    if len(site_data) == 0:
+    if len(site_data) == 0: # if no printings are available, add the card to the missing card list
         missing_cards.append(card_name)
     scraped_stores = []
     for i in range(len(site_data)):
@@ -87,12 +87,14 @@ def process_stores():
         for card in stores.get(store).keys():
             output_file.write(card + ": $" + str(stores.get(store).get(card)) + "\n")
             store_cost += stores.get(store).get(card)
-            print(card + ": $" + str(stores.get(store).get(card)))
-        output_file.write("Total cost: $" + str(store_cost) + "\n\n")
+            # print(card + ": $" + str(stores.get(store).get(card)))
+        output_file.write("Total cost: $" + str(round(store_cost,2)) + "\n\n")
     if len(missing_cards) > 0:
         print("Missing card(s): ")
+        output_file.write("Missing card(s): \n")
         for card in missing_cards:
             print(card)
+            output_file.write(card + "\n")
     output_file.close()
 
 # process the list of cards
