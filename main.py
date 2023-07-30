@@ -79,23 +79,24 @@ def parse_html(card_name):
             # print(site_name + ": " + str(stores.get(site_name).get(card_name)))
 
 def process_stores():
+    # create an output file, overwrite it if it already exists
     output_file = open("cardlocations.txt","w")
-    for store in stores.keys():
-        print(store + ": " + str(len(stores.get(store).keys())) + " card(s) in stock")
-        store_cost = 0
-        output_file.write(store + " (" + str(len(stores.get(store).keys())) + " card(s))" + "\n")
-        for card in stores.get(store).keys():
-            output_file.write(card + ": $" + str(stores.get(store).get(card)) + "\n")
-            store_cost += stores.get(store).get(card)
+    for store in stores.keys(): # for each store... 
+        print(store + ": " + str(len(stores.get(store).keys())) + " card(s) in stock") # print how many cards are in stock
+        store_cost = 0 # initialize the total cost of cards from the store
+        output_file.write(store + " (" + str(len(stores.get(store).keys())) + " card(s))" + "\n") # write the quantity to the file
+        for card in stores.get(store).keys(): # for each card in the store...
+            output_file.write(card + ": $" + str(stores.get(store).get(card)) + "\n") # write the card name and price to the file
+            store_cost += stores.get(store).get(card) # add to the store's total price
             # print(card + ": $" + str(stores.get(store).get(card)))
-        output_file.write("Total cost: $" + str(round(store_cost,2)) + "\n\n")
-    if len(missing_cards) > 0:
+        output_file.write("Total cost: $" + str(round(store_cost,2)) + "\n\n") # write the total cost for the store
+    if len(missing_cards) > 0: # if there's more than one missing card... 
         print("Missing card(s): ")
         output_file.write("Missing card(s): \n")
         for card in missing_cards:
-            print(card)
+            print(card) # print all the missing cards
             output_file.write(card + "\n")
-    output_file.close()
+    output_file.close() # close the file
 
 # process the list of cards
 for card in range(len(deck_list)):
