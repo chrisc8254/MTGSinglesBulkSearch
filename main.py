@@ -73,7 +73,7 @@ def parse_html(card_name):
         if site_name not in scraped_stores: # check the site doesn't already have an entry
             # add the card to the store's inventory
             # stores.get(site_name).update({card_name:float(price_data[i])})
-            if " Art Card" not in name_data[i]: # remove art cards from any results
+            if "Art Card" not in name_data[i]: # remove art cards from any results
                 stores.get(site_name)[card_name] = float(price_data[i])
                 scraped_stores.append(site_name)
             # print(site_name + ": " + str(stores.get(site_name).get(card_name)))
