@@ -1,12 +1,9 @@
+from flask import Flask, render_template, request
 import os
 import time
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
-
-# to do:
-# find the cheapest place to buy each card
-# find the cheapest place to buy the whole deck
 
 # set up the selenium driver to get the html data from the site
 options = Options()
@@ -22,9 +19,6 @@ driver = webdriver.Firefox(service=service,options=options)
 stores = {}
 missing_cards = []
 
-# set up list of cards to search for
-deck_list = open(os.path.dirname(script_file_path) + "\decklist.txt","r")
-deck_list = deck_list.read().split("\n")
 
 # send an html query for a specific card
 def search_card(card_name):
@@ -80,37 +74,52 @@ def parse_html(card_name):
 
 def process_stores():
     # create an output file, overwrite it if it already exists
-    output_file = open("cardlocations.txt","w")
+    # output_file = open("cardlocations.txt","w")
+    output_text = ""
     for store in stores.keys(): # for each store... 
-        print(store + ": " + str(len(stores.get(store).keys())) + " card(s) in stock") # print how many cards are in stock
+        # print(store + ": " + str(len(stores.get(store).keys())) + " card(s) in stock") # print how many cards are in stock
         store_cost = 0 # initialize the total cost of cards from the store
-        output_file.write(store + " (" + str(len(stores.get(store).keys())) + " card(s))" + "\n") # write the quantity to the file
+        output_text += (store + " (" + str(len(stores.get(store).keys())) + " card(s))" + "\n") # write the quantity to the file
         for card in stores.get(store).keys(): # for each card in the store...
-            output_file.write(card + ": $" + str(stores.get(store).get(card)) + "\n") # write the card name and price to the file
+            output_text += (card + ": $" + str(stores.get(store).get(card)) + "\n") # write the card name and price to the file
             store_cost += stores.get(store).get(card) # add to the store's total price
             # print(card + ": $" + str(stores.get(store).get(card)))
-        output_file.write("Total cost: $" + str(round(store_cost,2)) + "\n\n") # write the total cost for the store
+        output_text += ("Total cost: $" + str(round(store_cost,2)) + "\n\n") # write the total cost for the store
     if len(missing_cards) > 0: # if there's at least one missing card... 
-        print("Missing card(s): ")
-        output_file.write("Missing card(s): \n")
+        # print("Missing card(s): ")
+        output_text += ("Missing card(s): \n")
         for card in missing_cards:
-            print(card) # print all the missing cards
-            output_file.write(card + "\n")
-    output_file.close() # close the file
+            # print(card) # print all the missing cards
+            output_text += (card + "\n")
+    return output_text
+
+# web handling
+app = Flask(__name__)
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/process_list', methods=['POST'])
+def process_list():
+    input_list_str = request.form['inputList']
+
+    try:
+        # Convert the input string to a Python list of strings
+        input_list = [x.strip() for x in input_list_str.split('\n') if x.strip()]
+        # reset lists
+        stores = {}
+        missing_cards = []
+        # process
+        for card in range(len(input_list)):
+            parse_html(input_list[card])
+        output_result = process_stores()
+        result = f"Result: {output_result}"
+    except ValueError as e:
+        result = f"Error: {str(e)}<br>Please enter a valid list."
+
+    return result
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
-# process the list of cards
-for card in range(len(deck_list)):
-    # card = card.split("\n")[0]
-    # print(deck_list[card])
-    parse_html(deck_list[card])
-
-process_stores()
-
-# stuff below is just for testing the card search for a card with special characters
-# name = "dovin's veto"
-# name = format_name(name)
-# sitedata = search_card(name)
-# cardline = parse_html(sitedata,name)
-
-driver.close()
